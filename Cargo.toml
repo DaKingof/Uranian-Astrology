@@ -1,0 +1,19 @@
+[package]
+name = "uranian-astrology"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+# GUI framework
+eframe = "0.26"
+egui = "0.26"
+
+# Math and utilities
+nalgebra = "0.32"
+chrono = "0.4"
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+
+# Logging
+tracing = "0.1"
+tracing-subscriber = "0.3"

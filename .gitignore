@@ -1,0 +1,63 @@
+# Rust
+/target/
+**/*.rs.bk
+Cargo.lock
+
+# Qt build files
+build/
+*.pro.user
+*.pro.user.*
+.qmake.cache
+.qmake.stash
+moc_*.cpp
+moc_*.h
+qrc_*.cpp
+ui_*.h
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# Logs
+*.log
+
+# Dependencies
+node_modules/
+
+# Build artifacts
+/dist/
+/pkg/
+
+# Swiss Ephemeris data files
+/ephe/
+*.se1
+
+# Backup files
+*.backup
+*.bak
+*~
+
+# Temporary files
+*.tmp
+*.temp
+
+# Nix
+result
+result-*
