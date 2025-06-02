@@ -1,0 +1,122 @@
+use eframe::egui;
+use std::f32::consts::PI;
+
+fn main() -> Result<(), eframe::Error> {
+    let options = eframe::NativeOptions {
+        viewport: egui::ViewportBuilder::default()
+            .with_inner_size([800.0, 600.0])
+            .with_title("Uranian Astrology Dial"),
+        ..Default::default()
+    };
+
+    eframe::run_native(
+        "Uranian Astrology",
+        options,
+        Box::new(|_cc| Box::<DialApp>::default()),
+    )
+}
+
+/// Represents an angular position in degrees, minutes, and seconds
+#[derive(Debug, Clone, Copy, PartialEq)]
+struct DegreePosition {
+    degrees: u16,
+    minutes: u8,
+    seconds: u8,
+}
+
+impl DegreePosition {
+    /// Creates from total degrees
+    fn from_degrees(total_degrees: f32) -> Self {
+        let normalized = total_degrees.rem_euclid(360.0);
+        let degrees = normalized.floor() as u16;
+        let remaining_minutes = (normalized - degrees as f32) * 60.0;
+        let minutes = remaining_minutes.floor() as u8;
+        let seconds = ((remaining_minutes - minutes as f32) * 60.0).round() as u8;
+
+        // Handle edge case where seconds round to 60
+        if seconds >= 60 {
+            if minutes >= 59 {
+                Self {
+                    degrees: (degrees + 1) % 360,
+                    minutes: 0,
+                    seconds: 0,
+                }
+            } else {
+                Self {
+                    degrees,
+                    minutes: minutes + 1,
+                    seconds: 0,
+                }
+            }
+        } else {
+            Self { degrees, minutes, seconds }
+        }
+    }
+
+    /// Converts to total degrees
+    fn to_degrees(&self) -> f32 {
+        self.degrees as f32 + (self.minutes as f32 / 60.0) + (self.seconds as f32 / 3600.0)
+    }
+
+    /// Formats as string (e.g., "123°45'12"" or "123°45'" if no seconds)
+    fn format(&self) -> String {
+        if self.seconds == 0 {
+            format!("{}°{:02}'", self.degrees, self.minutes)
+        } else {
+            format!("{}°{:02}'{:02}\"", self.degrees, self.minutes, self.seconds)
+        }
+    }
+}
+
+struct DialApp {
+    position: DegreePosition,
+    is_dragging: bool,
+    dial_center: egui::Pos2,
+    dial_radius: f32,
+    harmonic: u8,
+    shift_pressed: bool,
+    ctrl_pressed: bool,
+}
+
+impl Default for DialApp {
+    fn default() -> Self {
+        Self {
+            position: DegreePosition::from_degrees(0.0),
+            is_dragging: false,
+            dial_center: egui::pos2(400.0, 300.0),
+            dial_radius: 200.0,
+            harmonic: 1,
+            shift_pressed: false,
+            ctrl_pressed: false,
+        }
+    }
+}
+
+impl DialApp {
+    /// Gets the increment based on modifier keys
+    fn get_increment(&self) -> f32 {
+        match (self.shift_pressed, self.ctrl_pressed) {
+            (true, true) => 1.0 / 3600.0,  // 1 second
+            (false, true) => 1.0 / 60.0,   // 1 minute
+            (true, false) => 1.0,           // 1 degree
+            (false, false) => 1.0 / 60.0,   // Default to 1 minute
+        }
+    }
+
+    /// Snaps angle to the current increment
+    fn snap_angle(&self, angle: f32) -> f32 {
+        let increment = self.get_increment();
+        (angle / increment).round() * increment
+    }
+
+    /// Calculates number of arms based on harmonic
+    fn get_arm_count(&self) -> u8 {
+        match self.harmonic {
+            1 => 4,   // 360° dial - 4 arms at cardinal points
+            2 => 8,   // 180° dial - 8 arms
+            4 => 16,  // 90° dial - 16 arms
+            8 => 32,  // 45° dial - 32 arms
+            _ => 4,   // Default to 4 arms
+        }
+    }
+}
